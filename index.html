@@ -1,0 +1,84 @@
+<style>
+    #msgBox {
+        display: none;
+    }
+</style>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script>
+    var socket = io.connect('http://'+window.location.host);
+
+    function get_random_color() {
+        return '#'+Math.floor(Math.random()*16777215).toString(16);
+    }
+
+    // on connection to server, ask for user's name with an anonymous callback
+    socket.on('connect', function () {
+        // call the server-side function 'adduser' and send one parameter (value of prompt)
+        var username = prompt('Manda seu nome aí, mano!!');
+
+        socket.emit('adduser', {
+            username : username,
+            color : get_random_color()
+        });
+
+        $('#msgBox').show();
+        $('#load').hide();
+    });
+
+    // listener, whenever the server emits 'updatechat', this updates the chat body
+    socket.on('updatechat', function (username, data) {
+        var message = username === 'SERVER'
+            ? '<b>'+username+'</b> '+data+'<br>'
+            : '<b style="background-color:'+username.color+';">'+username.username+':</b> '+data+'<br>';
+
+        $('#conversation').append(message);
+        $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
+        $('#data').focus();
+        // $('#conversationContainer').scrollTop($('#conversation').height());
+    });
+
+    // listener, whenever the server emits 'updateusers', this updates the username list
+    socket.on('updateusers', function (data) {
+        $('#users').empty();
+        $.each(data, function(key, value) {
+            $('#users').append('<div style="background-color:'+this.color+';">'+this.username+'</div>');
+        });
+    });
+
+    // on load of page
+    $(function () {
+        // when the client clicks SEND
+        $('#msgBox').on('submit', function () {
+            var message = $('#data').val();
+
+            if (message == '') {
+                return false;
+            }
+
+            $('#data').val('');
+            // tell server to execute 'sendchat' and send along one parameter
+            socket.emit('sendchat', message);
+
+            return false;
+        });
+    });
+
+</script>
+
+<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+    <b>USERS</b>
+    <div id="users"></div>
+</div>
+
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+    <div id="conversationContainer" style="height:300px;overflow:auto;">
+        <div id="conversation"></div>
+    </div>
+    <em id="load">Carregando...</em>
+    <form action="" id="msgBox" method="post">
+        <input id="data" style="width:200px;" />
+        <input type="submit" id="datasend" value="send" />
+    </form>
+</div>
