@@ -1,7 +1,8 @@
 var express = require('express'),
     http = require('http'),
-    _ = require('underscore'),
-    app = express(),
+    _ = require('underscore');
+
+var app = express(),
     server = http.createServer(app),
     io = require('socket.io').listen(server);
 
@@ -27,6 +28,11 @@ io.sockets.on('connection', function (socket) {
         io.sockets.emit('updatechat', usernames[socket.username], data);
     });
 
+    socket.on('ready', function () {
+        // echo to client they've connected
+        socket.emit('updatechat', 'SERVER', 'Visitante');
+    });
+
     // when the client emits 'adduser', this listens and executes
     socket.on('adduser', function (data) {
         // we store the username in the socket session for this client
@@ -49,11 +55,19 @@ io.sockets.on('connection', function (socket) {
 
     // when the user disconnects.. perform this
     socket.on('disconnect', function () {
-        // remove the username from global usernames list
-        delete usernames[socket.username];
-        // update list of users in chat, client-side
-        io.sockets.emit('updateusers', usernames);
-        // echo globally that this client has left
-        socket.broadcast.emit('updatechat', 'SERVER', socket.username+' pagou pau e pulou fora.');
+        var user = usernames[socket.username];
+
+        // Verificação caso o usuário é visitante
+        if (user !== undefined) {
+            // remove the username from global usernames list
+            delete usernames[socket.username];
+            // update list of users in chat, client-side
+            io.sockets.emit('updateusers', usernames);
+
+            var message = '<span style="background-color:'+user.color+'">'+user.username+'</span> pagou pau e pulou fora.';
+
+            // echo globally that this client has left
+            socket.broadcast.emit('updatechat', 'SERVER', message);
+        }
     });
 });

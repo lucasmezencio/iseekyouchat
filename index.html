@@ -15,16 +15,8 @@
 
     // on connection to server, ask for user's name with an anonymous callback
     socket.on('connect', function () {
-        // call the server-side function 'adduser' and send one parameter (value of prompt)
-        var username = prompt('Manda seu nome aí, mano!!');
-
-        socket.emit('adduser', {
-            username : username,
-            color : get_random_color()
-        });
-
-        $('#msgBox').show();
         $('#load').hide();
+        socket.emit('ready');
     });
 
     // listener, whenever the server emits 'updatechat', this updates the chat body
@@ -53,7 +45,7 @@
         $('#msgBox').on('submit', function () {
             var message = $('#data').val();
 
-            if (message == '') {
+            if ($.trim(message) == '') {
                 return false;
             }
 
@@ -63,11 +55,39 @@
 
             return false;
         });
+
+        $('#enterChat').on('submit', function() {
+            var username = $('#username').val();
+
+            if ($.trim(username) == '') {
+                return false;
+            }
+
+            $('#connect').hide();
+
+            // call the server-side function 'adduser' and send one parameter (value of prompt)
+            socket.emit('adduser', {
+                username : username,
+                color : get_random_color()
+            });
+
+            $('#msgBox').show();
+
+            return false;
+        });
     });
 
 </script>
 
 <div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+    <div id="connect">
+        <form action="" id="enterChat" method="post">
+            <label for="username">
+                Username: <input type="text" id="username" name="username">
+            </label>
+            <input type="submit" value="Enter chat">
+        </form>
+    </div>
     <b>USERS</b>
     <div id="users"></div>
 </div>
@@ -78,7 +98,7 @@
     </div>
     <em id="load">Carregando...</em>
     <form action="" id="msgBox" method="post">
-        <input id="data" style="width:200px;" />
+        <input id="data" name="data" style="width:200px;" />
         <input type="submit" id="datasend" value="send" />
     </form>
 </div>
