@@ -1,8 +1,11 @@
-var app = require('express').createServer(),
-    io = require('socket.io').listen(app),
-    _ = require('underscore');
+var express = require('express'),
+    http = require('http'),
+    _ = require('underscore'),
+    app = express(),
+    server = http.createServer(app),
+    io = require('socket.io').listen(server);
 
-app.listen(8080);
+server.listen(8080);
 
 // HOME
 app.get('/', function (req, res) {
