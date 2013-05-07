@@ -3,8 +3,8 @@
      "description" : "ICQ Chat Room like made on top of node.js and socket.io.",
      "version" : "0.0.1",
      "dependencies" : {
-        "express" : "2.4.6",
-        "socket.io" : "0.8.4",
+        "express" : "3.2.2",
+        "socket.io" : "0.9.14",
         "underscore": "1.4.4"
      }
 }
