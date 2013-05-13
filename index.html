@@ -1,104 +1,159 @@
-<style>
-    #msgBox {
-        display: none;
-    }
-</style>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script>
-    var socket = io.connect('http://'+window.location.host);
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
 
-    function get_random_color() {
-        return '#'+Math.floor(Math.random()*16777215).toString(16);
-    }
+        <title>ISYC - ISeekYouChat</title>
 
-    // on connection to server, ask for user's name with an anonymous callback
-    socket.on('connect', function () {
-        $('#load').hide();
-        socket.emit('ready');
-    });
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
 
-    // listener, whenever the server emits 'updatechat', this updates the chat body
-    socket.on('updatechat', function (username, data) {
-        var message = username === 'SERVER'
-            ? '<b>'+username+'</b> '+data+'<br>'
-            : '<b style="background-color:'+username.color+';">'+username.username+':</b> '+data+'<br>';
+        <!-- Le styles -->
+        <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-        $('#conversation').append(message);
-        $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
-        $('#data').focus();
-        // $('#conversationContainer').scrollTop($('#conversation').height());
-    });
+        <style type="text/css">
+            body {padding-top: 60px;padding-bottom: 40px;}
+        </style>
 
-    // listener, whenever the server emits 'updateusers', this updates the username list
-    socket.on('updateusers', function (data) {
-        $('#users').empty();
-        $.each(data, function(key, value) {
-            $('#users').append('<div style="background-color:'+this.color+';">'+this.username+'</div>');
-        });
-    });
+        <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    </head>
 
-    // on load of page
-    $(function () {
-        // when the client clicks SEND
-        $('#msgBox').on('submit', function () {
-            var message = $('#data').val();
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="#">ISYC - ISeekYouChat</a>
 
-            if ($.trim(message) == '') {
-                return false;
+                    <span id="connect">
+                        <form class="navbar-form pull-right" id="enterChat" method="post" action="">
+                            <input class="span2" type="text" placeholder="Username" name="username" id="username">
+                            <button type="submit" class="btn">Enter chat</button>
+                        </form>
+                    </span>
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Example row of columns -->
+            <div class="row">
+                <div class="span3">
+                    <div class="well sidebar-nav">
+                        <ul class="nav nav-list">
+                            <li class="nav-header">
+                                Usuários
+                            </li>
+                        </ul>
+
+                        <ul class="nav nav-list" id="users"></ul>
+                    </div>
+                </div>
+
+                <div class="span9">
+                    <div id="conversationContainer" style="height:400px;overflow:auto;">
+                        <div id="conversation"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span9 offset3">
+                    <form action="" id="msgBox" method="post" class="form-inline">
+                        <div>
+                            <input id="data" name="data" type="text">
+                            <input type="submit" id="datasend" value="send" class="btn">
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <hr>
+
+            <footer>
+                <p>&copy; Company 2013</p>
+            </footer>
+        </div> <!-- /container -->
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap.js.min"></script>
+        <script>
+            var socket = io.connect('http://'+window.location.host);
+
+            function get_random_color() {
+                return '#'+Math.floor(Math.random()*16777215).toString(16);
             }
 
-            $('#data').val('');
-            // tell server to execute 'sendchat' and send along one parameter
-            socket.emit('sendchat', message);
-
-            return false;
-        });
-
-        $('#enterChat').on('submit', function() {
-            var username = $('#username').val();
-
-            if ($.trim(username) == '') {
-                return false;
-            }
-
-            $('#connect').hide();
-
-            // call the server-side function 'adduser' and send one parameter (value of prompt)
-            socket.emit('adduser', {
-                username : username,
-                color : get_random_color()
+            // on connection to server, ask for user's name with an anonymous callback
+            socket.on('connect', function () {
+                // $('#load').hide();
+                socket.emit('ready');
             });
 
-            $('#msgBox').show();
+            // listener, whenever the server emits 'updatechat', this updates the chat body
+            socket.on('updatechat', function (username, data) {
+                var message;
 
-            return false;
-        });
-    });
+                if (username === 'SERVER') {
+                    message = '<b>'+username+'</b> '+data+'<br>';
+                } else {
+                    message = '<b style="background-color:'+username.color+';">'+username.username+':</b> '+data+'<br>';
+                }
 
-</script>
+                $('#conversation').append(message);
+                $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
+                $('#data').focus();
+                // $('#conversationContainer').scrollTop($('#conversation').height());
+            });
 
-<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
-    <div id="connect">
-        <form action="" id="enterChat" method="post">
-            <label for="username">
-                Username: <input type="text" id="username" name="username">
-            </label>
-            <input type="submit" value="Enter chat">
-        </form>
-    </div>
-    <b>USERS</b>
-    <div id="users"></div>
-</div>
+            // listener, whenever the server emits 'updateusers', this updates the username list
+            socket.on('updateusers', function (data) {
+                $('#users').empty();
+                $.each(data, function(key, value) {
+                    $('#users').append('<li style="background-color:'+this.color+';">'+this.username+'</li>');
+                });
+            });
 
-<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
-    <div id="conversationContainer" style="height:300px;overflow:auto;">
-        <div id="conversation"></div>
-    </div>
-    <em id="load">Carregando...</em>
-    <form action="" id="msgBox" method="post">
-        <input id="data" name="data" style="width:200px;" />
-        <input type="submit" id="datasend" value="send" />
-    </form>
-</div>
+            // on load of page
+            $(function () {
+                // when the client clicks SEND
+                $('#msgBox').on('submit', function () {
+                    var message = $('#data').val();
+
+                    if ($.trim(message) == '') {
+                        return false;
+                    }
+
+                    $('#data').val('');
+                    // tell server to execute 'sendchat' and send along one parameter
+                    socket.emit('sendchat', message);
+
+                    return false;
+                });
+
+                $('#enterChat').on('submit', function() {
+                    var username = $('#username').val();
+
+                    if ($.trim(username) == '') {
+                        return false;
+                    }
+
+                    $('#connect').hide();
+
+                    // call the server-side function 'adduser' and send one parameter (value of prompt)
+                    socket.emit('adduser', {
+                        username : username,
+                        color : get_random_color()
+                    });
+
+                    $('#msgBox').show();
+
+                    return false;
+                });
+            });
+        </script>
+    </body>
+</html>

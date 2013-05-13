@@ -8,6 +8,8 @@ var app = express(),
 
 server.listen(8080);
 
+app.use('/static', express.static(__dirname+'/public'));
+
 // HOME
 app.get('/', function (req, res) {
   res.sendfile(__dirname+'/index.html');
@@ -24,13 +26,17 @@ var usernames = {};
 io.sockets.on('connection', function (socket) {
     // when the client emits 'sendchat', this listens and executes
     socket.on('sendchat', function (data) {
+        var message = _.escape(data);
+
         // we tell the client to execute 'updatechat' with 2 parameters
-        io.sockets.emit('updatechat', usernames[socket.username], data);
+        io.sockets.emit('updatechat', usernames[socket.username], message);
     });
 
     socket.on('ready', function () {
         // echo to client they've connected
         socket.emit('updatechat', 'SERVER', 'Visitante');
+        // update the users list
+        socket.emit('updateusers', usernames);
     });
 
     // when the client emits 'adduser', this listens and executes
