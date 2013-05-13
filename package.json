@@ -1,11 +1,15 @@
 {
-     "name" : "iseekyouchat",
-     "description" : "ICQ Chat Room like made on top of node.js and socket.io.",
-     "version" : "0.0.1",
-     "dependencies" : {
+    "name" : "iseekyouchat",
+    "description" : "ICQ Chat Room like made on top of node.js and socket.io.",
+    "version" : "0.0.1",
+    "dependencies" : {
         "express" : "3.2.2",
         "socket.io" : "0.9.14",
         "underscore" : "1.4.4",
         "moment" : "2.0.0"
-     }
+    },
+    "engines" : {
+        "node" : "0.8.x",
+        "npm" : "1.1.x"
+    }
 }
