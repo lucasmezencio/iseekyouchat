@@ -27,7 +27,7 @@
                 <div class="container">
                     <a class="brand" href="#">ISYC - ISeekYouChat</a>
 
-                    <span id="connect">
+                    <span id="connect" style="display:none;">
                         <form class="navbar-form pull-right" id="enterChat" method="post" action="">
                             <input class="span2" type="text" placeholder="Username" name="username" id="username">
                             <button type="submit" class="btn">Enter chat</button>
@@ -64,10 +64,9 @@
             <div class="row">
                 <div class="span9 offset3">
                     <form action="" id="msgBox" method="post" class="form-inline" style="display:none;">
-                        <div>
-                            <input id="data" name="data" type="text">
-                            <input type="submit" id="datasend" value="send" class="btn">
-                        </div>
+                        <input id="data" name="data" type="text">
+                        <input type="submit" id="datasend" value="send" class="btn">
+                        <label for="rolagem" class="checkbox"><input type="checkbox" id="rolagem" name="rolagem" checked="checked"> Rolagem automática</label>
                     </form>
                 </div>
             </div>
@@ -93,6 +92,7 @@
             // on connection to server, ask for user's name with an anonymous callback
             socket.on('connect', function () {
                 $('#conversation').empty();
+                $('#connect').show();
                 socket.emit('ready');
             });
 
@@ -108,10 +108,15 @@
                 }
 
                 $('#conversation').append(message);
-                $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
-                $('#datasend').attr('disabled', false);
-                $('#data').attr('disabled', false).focus();
-                // $('#conversationContainer').scrollTop($('#conversation').height());
+
+                if ($('#rolagem').is(':checked')) {
+                    $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
+                }
+
+                if ($('#datasend').is(':visible')) {
+                    $('#datasend').attr('disabled', false);
+                    $('#data').attr('disabled', false).focus();
+                }
             });
 
             // listener, whenever the server emits 'updateusers', this updates the username list
