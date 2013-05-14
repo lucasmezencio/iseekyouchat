@@ -33,8 +33,7 @@
                             <button type="submit" class="btn">Enter chat</button>
                         </form>
                     </span>
-                    </div><!--/.nav-collapse -->
-                </div>
+                </div><!--/.nav-collapse -->
             </div>
         </div>
 
@@ -55,7 +54,9 @@
 
                 <div class="span9">
                     <div id="conversationContainer" style="height:400px;overflow:auto;">
-                        <div id="conversation"></div>
+                        <div id="conversation">
+                            <p>Carregando...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,7 +92,7 @@
 
             // on connection to server, ask for user's name with an anonymous callback
             socket.on('connect', function () {
-                // $('#load').hide();
+                $('#conversation').empty();
                 socket.emit('ready');
             });
 
@@ -108,16 +109,27 @@
 
                 $('#conversation').append(message);
                 $('#conversationContainer').stop().animate({scrollTop : $('#conversation').height()});
-                $('#data').focus();
+                $('#datasend').attr('disabled', false);
+                $('#data').attr('disabled', false).focus();
                 // $('#conversationContainer').scrollTop($('#conversation').height());
             });
 
             // listener, whenever the server emits 'updateusers', this updates the username list
-            socket.on('updateusers', function (data) {
-                $('#users').empty();
-                $.each(data, function(key, value) {
-                    $('#users').append('<li style="background-color:'+this.color+';">'+this.username+'</li>');
-                });
+            socket.on('updateusers', function (users) {
+                var $usersList = $('#users')
+                    quantUsers = Object.keys(users).length;
+
+                $usersList.empty();
+
+                if (quantUsers > 0) {
+                    $.each(users, function(key, value) {
+                        $usersList.append('<li style="background-color:'+this.color+';">'+this.username+'</li>');
+                    });
+                }
+
+                if (quantUsers == 0) {
+                    $usersList.append('<li>Nenhum usuário conectado.</li>');
+                }
             });
 
             // on load of page
@@ -130,7 +142,8 @@
                         return false;
                     }
 
-                    $('#data').val('');
+                    $('#datasend').attr('disabled', true);
+                    $('#data').val('').attr('disabled', true);
                     // tell server to execute 'sendchat' and send along one parameter
                     socket.emit('sendchat', message);
 
