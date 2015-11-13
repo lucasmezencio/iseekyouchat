@@ -9,6 +9,6 @@ How to
 ------
 ```
 $ cd /path/to/project/
-$ npm install -d
+$ npm install
 $ node app.js
 ```
